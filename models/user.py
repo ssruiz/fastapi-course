@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy import String, Enum
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
