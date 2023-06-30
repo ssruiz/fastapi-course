@@ -1,11 +1,12 @@
-import jwt
 from datetime import datetime, timedelta
-from sqlalchemy import select
-from fastapi import HTTPException
-from starlette.requests import Request
 from typing import Optional
+
+import jwt
 from decouple import config
+from fastapi import HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy import select
+from starlette.requests import Request
 
 from db import LocalSession
 from models import User
@@ -30,11 +31,14 @@ class CustomHTTPBearer(HTTPBearer):
             try:
                 payload = jwt.decode(res.credentials, config("JWT_SECRET"), algorithms=["HS256"])
                 query = select(User).where(User.id == payload["sub"])
-                user_data = session.execute(query).fetchone()
+                user_db: User = session.scalar(query)
                 # user_data = await database.fetch_one(user.select().where(user.c.id == payload["sub"]))
-                request.state.user = user_data
-                return user_data
+                request.state.user = user_db
+                return payload
             except jwt.ExpiredSignatureError:
                 raise HTTPException(410, "Token has expired")
             except jwt.InvalidTokenError:
                 raise HTTPException(410, "Invalid token")
+
+
+oauth_scheme = CustomHTTPBearer()

@@ -1,4 +1,3 @@
-import datetime
 from typing import List
 
 from sqlalchemy import String, Enum, Text, DateTime, func, Float, ForeignKey, Integer
@@ -21,3 +20,15 @@ class Complaint(Base):
     status = mapped_column(Enum(State), server_default=State.pending.name)
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped[List["User"]] = relationship(back_populates="complaints")
+
+    def dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "photo_url": self.photo_url,
+            "amount": self.amount,
+            "created_at": self.created_at,
+            "status": self.status,
+            "user_id": self.user_id,
+        }
