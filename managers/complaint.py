@@ -25,3 +25,15 @@ class ComplaintManager:
         db.commit()
         db.refresh(new_complaint)
         return new_complaint.dict()
+
+    @staticmethod
+    def delete_complaint(complaint_id: int, user_id: int, db: Session):
+        complaint_to_delete = db.get(Complaint, complaint_id)
+        db.delete(complaint_to_delete)
+        db.commit()
+
+    @staticmethod
+    def change_status(complaint_id: int, new_state: State, db: Session):
+        complaint_to_delete = db.get(Complaint, complaint_id)
+        complaint_to_delete.status = new_state
+        db.commit()

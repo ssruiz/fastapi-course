@@ -9,7 +9,7 @@ from sqlalchemy import select
 from starlette.requests import Request
 
 from db import LocalSession
-from models import User
+from models import User, RoleType
 
 
 class AuthManager:
@@ -42,3 +42,21 @@ class CustomHTTPBearer(HTTPBearer):
 
 
 oauth_scheme = CustomHTTPBearer()
+
+
+def is_admin(request: Request):
+    user = request.state.user
+    if not user.role == RoleType.admin:
+        raise HTTPException(403, "Forbidden")
+
+
+def is_approver(request: Request):
+    user = request.state.user
+    if not user.role == RoleType.approver:
+        raise HTTPException(403, "Forbidden")
+
+
+def is_complainer(request: Request):
+    user = request.state.user
+    if not user.role == RoleType.complainer:
+        raise HTTPException(403, "Forbidden")

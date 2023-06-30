@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from managers.auth import AuthManager
-from models import User
+from models import User, RoleType
 from schemas.request.user import UserRegisterIn, UserLoginIn
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -36,3 +36,26 @@ class UserManager:
             raise HTTPException(400, "Wrong email or password")
 
         return AuthManager.encode_token(user_db)
+
+    @staticmethod
+    def get_users(db: Session):
+        q = select(User)
+        users_db = db.scalars(q).all()
+        return users_db
+
+    @staticmethod
+    def get_user_by_email(email: str, db: Session):
+        q = select(User).filter_by(email=email)
+        users_db = db.scalars(q).all()
+        return users_db
+
+    @staticmethod
+    def change_role(new_role: RoleType, user_id: int, db: Session):
+        user_db = db.get(User, user_id)
+        if not user_db:
+            raise HTTPException(404, "User not found")
+
+        user_db.role = new_role
+        db.commit()
+        db.refresh(user_db)
+        return user_db
