@@ -25,3 +25,5 @@ archive.zip
 *~
 .*.sw?
 .cache
+
+tmp_files/*

@@ -1,8 +1,18 @@
+import os.path
+import uuid
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from constants import TEMP_FILE_FOLDER
 from models import RoleType, State, Complaint, User
 from schemas.request.complaint import ComplaintIn
+from services.s3 import S3Service
+from services.ses import SESService
+from utils.helpers import decode_photo
+
+s3 = S3Service()
+ses = SESService()
 
 
 class ComplaintManager:
@@ -20,7 +30,15 @@ class ComplaintManager:
 
     @staticmethod
     def create_complaint(complain_data: ComplaintIn, user_id: int, db: Session):
-        new_complaint = Complaint(**complain_data.dict(), user_id=user_id)
+        complain_data_dict = complain_data.dict()
+        encoded_photo = complain_data_dict.pop("encoded_photo")
+        extension = complain_data_dict.pop("extension")
+        name = f"{uuid.uuid4()}.{extension}"
+        path = os.path.join(TEMP_FILE_FOLDER, name)
+        decode_photo(path, encoded_photo)
+        uploaded_photo_url = s3.upload(path, name, extension)
+        os.remove(path)
+        new_complaint = Complaint(**complain_data_dict, user_id=user_id, photo_url=uploaded_photo_url)
         db.add(new_complaint)
         db.commit()
         db.refresh(new_complaint)
@@ -37,3 +55,5 @@ class ComplaintManager:
         complaint_to_delete = db.get(Complaint, complaint_id)
         complaint_to_delete.status = new_state
         db.commit()
+        ses.send_mail(f"Complaint has been: {new_state.name.capitalize()}", ["ssruiz6@gmail.com"],
+                      f"The new status of your complaint is: {new_state.name.capitalize()}")
