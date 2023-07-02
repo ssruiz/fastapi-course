@@ -1,18 +1,34 @@
-import sqlalchemy
+from typing import List
 
-from db import metadata
+from sqlalchemy import String, Enum, Text, DateTime, func, Float, ForeignKey, Integer
+from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import mapped_column
+
+from models import User
+from models.base import Base
 from models.enums import State
 
-complaint = sqlalchemy.Table("complaints",
-                             metadata,
-                             sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-                             sqlalchemy.Column("title", sqlalchemy.String(120), nullable=False),
-                             sqlalchemy.Column("description", sqlalchemy.Text, nullable=False),
-                             sqlalchemy.Column("photo_url", sqlalchemy.String(200), nullable=False),
-                             sqlalchemy.Column("amount", sqlalchemy.Float, nullable=False),
-                             sqlalchemy.Column("created_at", sqlalchemy.DateTime,
-                                               server_default=sqlalchemy.func.now()),
-                             sqlalchemy.Column("status", sqlalchemy.Enum(State), nullable=False,
-                                               server_default=State.pending.name),
-                             sqlalchemy.Column("complainer_id", sqlalchemy.ForeignKey("users.id"), nullable=False)
-                             )
+
+class Complaint(Base):
+    __tablename__ = "complaints"
+    id = mapped_column(Integer, primary_key=True)
+    title = mapped_column(String(120), nullable=False)
+    description = mapped_column(Text, nullable=False)
+    photo_url = mapped_column(String(200), nullable=False)
+    amount = mapped_column(Float, nullable=False)
+    created_at = mapped_column(DateTime, server_default=func.now())
+    status = mapped_column(Enum(State), server_default=State.pending.name)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped[List["User"]] = relationship(back_populates="complaints")
+
+    def dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "photo_url": self.photo_url,
+            "amount": self.amount,
+            "created_at": self.created_at,
+            "status": self.status,
+            "user_id": self.user_id,
+        }
