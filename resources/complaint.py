@@ -22,7 +22,7 @@ async def get_all(db: Session = Depends(get_db), current_user: User = Depends(ge
 @router.post("", dependencies=[Depends(is_complainer)], response_model=ComplaintOut, status_code=201)
 async def create(complaint_data: ComplaintIn, db: Session = Depends(get_db),
                  current_user: User = Depends(get_request_user)):
-    complaint = ComplaintManager.create_complaint(complaint_data, current_user.id, db)
+    complaint = ComplaintManager.create_complaint(complaint_data, current_user, db)
     return complaint
 
 

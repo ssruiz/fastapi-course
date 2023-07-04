@@ -44,7 +44,7 @@ http://127.0.0.1:8000/docs
 * [![AWSS3][AWSS3]][AWSS3-url]
 * [![AWSSeS][AWSSES]][AWSSES-url]
 
-[//]: # (* [![WISE][WISE]][WISE-url])
+* [![WISE][WISE]][WISE-url]
 
 ## License
 
